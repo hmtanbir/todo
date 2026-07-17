@@ -6,14 +6,10 @@ use axum::{
 };
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use std::{
-    fs,
-    path::Path,
-    sync::Arc,
-};
+use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
+use std::{fs, path::Path, sync::Arc};
 use tower_http::cors::{Any, CorsLayer};
 use uuid::Uuid;
-use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 
 #[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 struct Todo {
@@ -86,7 +82,7 @@ async fn init_database(pool: &SqlitePool) {
             created_at TEXT NOT NULL,
             updated_at TEXT NOT NULL,
             position INTEGER NOT NULL DEFAULT 0
-        )"
+        )",
     )
     .execute(pool)
     .await
@@ -143,7 +139,8 @@ async fn init_database(pool: &SqlitePool) {
             ),
         ];
 
-        for (id, title, desc, completed, priority, category, due, created, updated, pos) in initial {
+        for (id, title, desc, completed, priority, category, due, created, updated, pos) in initial
+        {
             sqlx::query(
                 "INSERT INTO todos (id, title, description, completed, priority, category, due_date, created_at, updated_at, position)
                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
@@ -165,7 +162,9 @@ async fn init_database(pool: &SqlitePool) {
     }
 }
 
-async fn get_todos(State(state): State<Arc<AppState>>) -> Result<Json<Vec<Todo>>, (StatusCode, String)> {
+async fn get_todos(
+    State(state): State<Arc<AppState>>,
+) -> Result<Json<Vec<Todo>>, (StatusCode, String)> {
     let todos = sqlx::query_as::<_, Todo>("SELECT * FROM todos ORDER BY position ASC")
         .fetch_all(&state.db)
         .await
@@ -184,7 +183,10 @@ async fn create_todo(
     let now = Utc::now().to_rfc3339();
     let id = Uuid::new_v4().to_string();
     let title = payload.title.trim().to_string();
-    let description = payload.description.map(|d| d.trim().to_string()).filter(|d| !d.is_empty());
+    let description = payload
+        .description
+        .map(|d| d.trim().to_string())
+        .filter(|d| !d.is_empty());
     let priority = payload.priority.unwrap_or_else(|| "medium".to_string());
     let category = payload.category.unwrap_or_else(|| "General".to_string());
     let due_date = payload.due_date;
@@ -193,7 +195,7 @@ async fn create_todo(
         .fetch_one(&state.db)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-    
+
     let position = min_pos.unwrap_or(0) - 1;
 
     let new_todo = Todo {
@@ -250,23 +252,32 @@ async fn update_todo(
 
     let updated = Todo {
         id: existing.id.clone(),
-        title: payload.title
+        title: payload
+            .title
             .map(|t| t.trim().to_string())
             .unwrap_or_else(|| existing.title.clone()),
         description: match payload.description {
             Some(d) => {
                 let trimmed = d.trim().to_string();
-                if trimmed.is_empty() { None } else { Some(trimmed) }
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(trimmed)
+                }
             }
             None => existing.description.clone(),
         },
         completed: payload.completed.unwrap_or(existing.completed),
-        priority: payload.priority.unwrap_or_else(|| existing.priority.clone()),
+        priority: payload
+            .priority
+            .unwrap_or_else(|| existing.priority.clone()),
         category: payload
             .category
             .map(|c| c.trim().to_string())
             .unwrap_or_else(|| existing.category.clone()),
-        due_date: payload.due_date.unwrap_or_else(|| existing.due_date.clone()),
+        due_date: payload
+            .due_date
+            .unwrap_or_else(|| existing.due_date.clone()),
         created_at: existing.created_at.clone(),
         updated_at: now,
         position: existing.position,
@@ -315,14 +326,20 @@ async fn clear_completed(
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    Ok(Json(serde_json::json!({ "success": true, "clearedCount": result.rows_affected() })))
+    Ok(Json(
+        serde_json::json!({ "success": true, "clearedCount": result.rows_affected() }),
+    ))
 }
 
 async fn reorder_todos(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<ReorderRequest>,
 ) -> Result<Json<Vec<Todo>>, (StatusCode, String)> {
-    let mut tx = state.db.begin().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    let mut tx = state
+        .db
+        .begin()
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     for (index, id) in payload.ordered_ids.iter().enumerate() {
         sqlx::query("UPDATE todos SET position = ? WHERE id = ?")
@@ -333,7 +350,9 @@ async fn reorder_todos(
             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     }
 
-    tx.commit().await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    tx.commit()
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let todos = sqlx::query_as::<_, Todo>("SELECT * FROM todos ORDER BY position ASC")
         .fetch_all(&state.db)
@@ -371,22 +390,23 @@ async fn main() {
         .route("/api/todos", get(get_todos).post(create_todo))
         .route("/api/todos/clear-completed", post(clear_completed))
         .route("/api/todos/reorder", post(reorder_todos))
-        .route("/api/todos/{id}", put(update_todo).delete(delete_todo_handler));
+        .route(
+            "/api/todos/{id}",
+            put(update_todo).delete(delete_todo_handler),
+        );
 
     let app = Router::new()
         .merge(api_routes)
         .fallback_service(
             tower_http::services::ServeDir::new("dist")
-                .fallback(tower_http::services::ServeFile::new("dist/index.html"))
+                .fallback(tower_http::services::ServeFile::new("dist/index.html")),
         )
         .layer(cors)
         .with_state(state);
 
     let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
-    let listener = tokio::net::TcpListener::bind(&addr)
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     println!("Server running on http://localhost:{}", port);
     axum::serve(listener, app).await.unwrap();
 }

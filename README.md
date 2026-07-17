@@ -1,4 +1,4 @@
-# LeptosTask - Full-Stack Rust Todo App
+# Todo - Full-Stack Rust Todo App
 
 A full-stack Rust todo application built with **Leptos** (frontend) and **Axum** (backend), faithfully ported from the React/Express original.
 

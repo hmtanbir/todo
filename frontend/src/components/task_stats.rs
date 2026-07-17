@@ -1,11 +1,9 @@
-use leptos::prelude::*;
-use crate::types::*;
 use crate::components::icons::*;
+use crate::types::*;
+use leptos::prelude::*;
 
 #[component]
-pub fn TaskStats(
-    todos: Memo<Vec<Todo>>,
-) -> impl IntoView {
+pub fn TaskStats(todos: Memo<Vec<Todo>>) -> impl IntoView {
     let total = Memo::new(move |_| todos.get().len());
     let completed = Memo::new(move |_| todos.get().iter().filter(|t| t.completed).count());
     let active = Memo::new(move |_| total.get() - completed.get());
@@ -18,18 +16,38 @@ pub fn TaskStats(
         }
     });
     let high_priority = Memo::new(move |_| {
-        todos.get().iter().filter(|t| !t.completed && t.priority == TodoPriority::High).count()
+        todos
+            .get()
+            .iter()
+            .filter(|t| !t.completed && t.priority == TodoPriority::High)
+            .count()
     });
     let medium_priority = Memo::new(move |_| {
-        todos.get().iter().filter(|t| !t.completed && t.priority == TodoPriority::Medium).count()
+        todos
+            .get()
+            .iter()
+            .filter(|t| !t.completed && t.priority == TodoPriority::Medium)
+            .count()
     });
     let low_priority = Memo::new(move |_| {
-        todos.get().iter().filter(|t| !t.completed && t.priority == TodoPriority::Low).count()
+        todos
+            .get()
+            .iter()
+            .filter(|t| !t.completed && t.priority == TodoPriority::Low)
+            .count()
     });
     let upcoming_overdue = Memo::new(move |_| {
-        todos.get().iter().filter(|t| {
-            !t.completed && t.due_date.as_deref().map(|d| is_date_overdue(d)).unwrap_or(false)
-        }).count()
+        todos
+            .get()
+            .iter()
+            .filter(|t| {
+                !t.completed
+                    && t.due_date
+                        .as_deref()
+                        .map(|d| is_date_overdue(d))
+                        .unwrap_or(false)
+            })
+            .count()
     });
 
     view! {

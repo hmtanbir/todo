@@ -116,9 +116,18 @@ pub fn format_date_short(date_str: &str) -> String {
         return date_str.to_string();
     }
     let month = match parts[1].parse::<u32>().unwrap_or(0) {
-        1 => "Jan", 2 => "Feb", 3 => "Mar", 4 => "Apr",
-        5 => "May", 6 => "Jun", 7 => "Jul", 8 => "Aug",
-        9 => "Sep", 10 => "Oct", 11 => "Nov", 12 => "Dec",
+        1 => "Jan",
+        2 => "Feb",
+        3 => "Mar",
+        4 => "Apr",
+        5 => "May",
+        6 => "Jun",
+        7 => "Jul",
+        8 => "Aug",
+        9 => "Sep",
+        10 => "Oct",
+        11 => "Nov",
+        12 => "Dec",
         _ => "???",
     };
     let day = parts[2].parse::<u32>().unwrap_or(0);
@@ -142,7 +151,15 @@ pub fn format_full_datetime(date_str: &str) -> String {
         if time_components.len() >= 2 {
             let hour: u32 = time_components[0].parse().unwrap_or(0);
             let min = time_components[1];
-            let (h, ampm) = if hour == 0 { (12, "AM") } else if hour < 12 { (hour, "AM") } else if hour == 12 { (12, "PM") } else { (hour - 12, "PM") };
+            let (h, ampm) = if hour == 0 {
+                (12, "AM")
+            } else if hour < 12 {
+                (hour, "AM")
+            } else if hour == 12 {
+                (12, "PM")
+            } else {
+                (hour - 12, "PM")
+            };
             format!("{}, {}:{:>02} {}", formatted_date, h, min, ampm)
         } else {
             formatted_date
@@ -166,7 +183,15 @@ pub fn format_time_short(date_str: &str) -> String {
         if time_components.len() >= 2 {
             let hour: u32 = time_components[0].parse().unwrap_or(0);
             let min = time_components[1];
-            let (h, ampm) = if hour == 0 { (12, "AM") } else if hour < 12 { (hour, "AM") } else if hour == 12 { (12, "PM") } else { (hour - 12, "PM") };
+            let (h, ampm) = if hour == 0 {
+                (12, "AM")
+            } else if hour < 12 {
+                (hour, "AM")
+            } else if hour == 12 {
+                (12, "PM")
+            } else {
+                (hour - 12, "PM")
+            };
             format!("{}:{:>02} {}", h, min, ampm)
         } else {
             time_short.to_string()
@@ -181,7 +206,15 @@ pub fn current_time_string() -> String {
     let hours = date.get_hours();
     let minutes = date.get_minutes();
     let seconds = date.get_seconds();
-    let (h, ampm) = if hours == 0 { (12, "AM") } else if hours < 12 { (hours as u32, "AM") } else if hours == 12 { (12, "PM") } else { ((hours - 12) as u32, "PM") };
+    let (h, ampm) = if hours == 0 {
+        (12, "AM")
+    } else if hours < 12 {
+        (hours as u32, "AM")
+    } else if hours == 12 {
+        (12, "PM")
+    } else {
+        ((hours - 12) as u32, "PM")
+    };
     format!("{}:{:>02}:{:>02} {}", h, minutes, seconds, ampm)
 }
 
@@ -207,7 +240,9 @@ pub fn is_date_overdue(due_date: &str) -> bool {
 pub fn current_date_display() -> String {
     let date = js_sys::Date::new_0();
     let days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    let months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
     let day_name = days[date.get_day() as usize];
     let month_name = months[date.get_month() as usize];
     let day_num = date.get_date();

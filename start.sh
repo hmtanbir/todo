@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== LeptosTask - Full-Stack Rust Todo App ==="
+echo "=== Todo - Full-Stack Rust Todo App ==="
 echo ""
 
 echo "Starting Axum API server on port 3001..."
