@@ -1,6 +1,6 @@
-use leptos::prelude::*;
-use crate::types::*;
 use crate::components::icons::*;
+use crate::types::*;
+use leptos::prelude::*;
 
 #[component]
 pub fn AddTodoForm(
@@ -40,7 +40,11 @@ pub fn AddTodoForm(
 
         on_add_todo.run(NewTodoData {
             title: t.trim().to_string(),
-            description: if desc.trim().is_empty() { None } else { Some(desc.trim().to_string()) },
+            description: if desc.trim().is_empty() {
+                None
+            } else {
+                Some(desc.trim().to_string())
+            },
             priority: priority.get(),
             category: final_category,
             due_date: if dd.is_empty() { None } else { Some(dd) },

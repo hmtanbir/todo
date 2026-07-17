@@ -1,5 +1,5 @@
-use leptos::prelude::*;
 use crate::components::icons::*;
+use leptos::prelude::*;
 
 #[component]
 pub fn TaskFilter(

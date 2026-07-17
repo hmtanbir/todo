@@ -1,6 +1,6 @@
-use leptos::prelude::*;
-use crate::types::*;
 use crate::components::icons::*;
+use crate::types::*;
+use leptos::prelude::*;
 
 #[component]
 pub fn TodoItem(
@@ -18,7 +18,11 @@ pub fn TodoItem(
     let (edit_due_date, set_edit_due_date) = signal(todo.due_date.clone().unwrap_or_default());
     let (is_expanded, set_is_expanded) = signal(false);
 
-    let is_overdue = todo.due_date.as_deref().map(|d| is_date_overdue(d)).unwrap_or(false);
+    let is_overdue = todo
+        .due_date
+        .as_deref()
+        .map(|d| is_date_overdue(d))
+        .unwrap_or(false);
 
     let priority_border_class = match todo.priority {
         TodoPriority::High => "border-l-4 border-l-[#EF4444]",
@@ -32,7 +36,11 @@ pub fn TodoItem(
         TodoPriority::Low => "bg-[#DBEAFE] text-[#1D4ED8] border-none",
     };
 
-    let completed_class = if todo.completed { "opacity-60 bg-[#F9FAFB]/50" } else { "" };
+    let completed_class = if todo.completed {
+        "opacity-60 bg-[#F9FAFB]/50"
+    } else {
+        ""
+    };
     let title_class = if todo.completed {
         "text-xs font-bold tracking-tight text-[#9CA3AF] font-medium line-through truncate"
     } else {
@@ -44,17 +52,26 @@ pub fn TodoItem(
         let on_update = on_update.clone();
         move |_| {
             let t = edit_title.get();
-            if t.trim().is_empty() { return; }
+            if t.trim().is_empty() {
+                return;
+            }
             let desc = edit_desc.get();
             let dd = edit_due_date.get();
-            on_update.run((todo_id.clone(), TodoUpdate {
-                title: Some(t.trim().to_string()),
-                description: Some(if desc.trim().is_empty() { None } else { Some(desc.trim().to_string()) }),
-                completed: None,
-                priority: Some(edit_priority.get()),
-                category: Some(edit_category.get()),
-                due_date: Some(if dd.is_empty() { None } else { Some(dd) }),
-            }));
+            on_update.run((
+                todo_id.clone(),
+                TodoUpdate {
+                    title: Some(t.trim().to_string()),
+                    description: Some(if desc.trim().is_empty() {
+                        None
+                    } else {
+                        Some(desc.trim().to_string())
+                    }),
+                    completed: None,
+                    priority: Some(edit_priority.get()),
+                    category: Some(edit_category.get()),
+                    due_date: Some(if dd.is_empty() { None } else { Some(dd) }),
+                },
+            ));
             set_is_editing.set(false);
         }
     };
@@ -76,7 +93,7 @@ pub fn TodoItem(
     };
 
     let render_todo_id = todo.id.clone();
-    
+
     // Captures for the reactive view closure
     let c_todo_id_edit = todo.id.clone();
     let c_todo_id_toggle = todo.id.clone();
@@ -162,17 +179,17 @@ pub fn TodoItem(
                 let toggle_fn = on_toggle.clone();
                 let delete_id = c_todo_id_delete.clone();
                 let delete_fn = on_delete.clone();
-                
+
                 let title = c_todo_title.clone();
                 let category = c_todo_category.clone();
                 let priority = c_todo_priority;
                 let completed = c_todo_completed;
                 let due_date = c_todo_due_date.clone();
-                
+
                 let desc_show = c_todo_description.is_some();
                 let due_show = c_todo_due_date.is_some();
                 let desc_render = c_todo_description.clone();
-                
+
                 let created_at = c_todo_created_at.clone();
                 let updated_at = c_todo_updated_at.clone();
 

@@ -1,11 +1,11 @@
-use leptos::prelude::*;
-use wasm_bindgen_futures::spawn_local;
-use crate::types::*;
 use crate::components::add_todo_form::AddTodoForm;
+use crate::components::icons::*;
 use crate::components::task_filter::TaskFilter;
 use crate::components::task_stats::TaskStats;
 use crate::components::todo_item::TodoItem;
-use crate::components::icons::*;
+use crate::types::*;
+use leptos::prelude::*;
+use wasm_bindgen_futures::spawn_local;
 
 async fn fetch_todos_from_server() -> Result<Vec<Todo>, String> {
     let resp = gloo_net::http::Request::get("/api/todos")
@@ -13,7 +13,9 @@ async fn fetch_todos_from_server() -> Result<Vec<Todo>, String> {
         .await
         .map_err(|e| format!("Network error: {}", e))?;
     if resp.ok() {
-        resp.json::<Vec<Todo>>().await.map_err(|e| format!("Parse error: {}", e))
+        resp.json::<Vec<Todo>>()
+            .await
+            .map_err(|e| format!("Parse error: {}", e))
     } else {
         Err(format!("Server error: {}", resp.status()))
     }
@@ -35,7 +37,9 @@ async fn create_todo_on_server(data: &NewTodoData) -> Result<Todo, String> {
         .await
         .map_err(|e| format!("Network error: {}", e))?;
     if resp.ok() {
-        resp.json::<Todo>().await.map_err(|e| format!("Parse error: {}", e))
+        resp.json::<Todo>()
+            .await
+            .map_err(|e| format!("Parse error: {}", e))
     } else {
         Err(format!("Server error: {}", resp.status()))
     }
@@ -48,23 +52,34 @@ async fn update_todo_on_server(id: &str, updates: &TodoUpdate) -> Result<Todo, S
     }
     if let Some(ref d) = updates.description {
         match d {
-            Some(val) => { body.insert("description".into(), serde_json::Value::String(val.clone())); }
-            None => { body.insert("description".into(), serde_json::Value::Null); }
+            Some(val) => {
+                body.insert("description".into(), serde_json::Value::String(val.clone()));
+            }
+            None => {
+                body.insert("description".into(), serde_json::Value::Null);
+            }
         };
     }
     if let Some(c) = updates.completed {
         body.insert("completed".into(), serde_json::Value::Bool(c));
     }
     if let Some(ref p) = updates.priority {
-        body.insert("priority".into(), serde_json::Value::String(p.as_str().to_string()));
+        body.insert(
+            "priority".into(),
+            serde_json::Value::String(p.as_str().to_string()),
+        );
     }
     if let Some(ref c) = updates.category {
         body.insert("category".into(), serde_json::Value::String(c.clone()));
     }
     if let Some(ref d) = updates.due_date {
         match d {
-            Some(val) => { body.insert("dueDate".into(), serde_json::Value::String(val.clone())); }
-            None => { body.insert("dueDate".into(), serde_json::Value::Null); }
+            Some(val) => {
+                body.insert("dueDate".into(), serde_json::Value::String(val.clone()));
+            }
+            None => {
+                body.insert("dueDate".into(), serde_json::Value::Null);
+            }
         };
     }
     let resp = gloo_net::http::Request::put(&format!("/api/todos/{}", id))
@@ -75,7 +90,9 @@ async fn update_todo_on_server(id: &str, updates: &TodoUpdate) -> Result<Todo, S
         .await
         .map_err(|e| format!("Network error: {}", e))?;
     if resp.ok() {
-        resp.json::<Todo>().await.map_err(|e| format!("Parse error: {}", e))
+        resp.json::<Todo>()
+            .await
+            .map_err(|e| format!("Parse error: {}", e))
     } else {
         Err(format!("Server error: {}", resp.status()))
     }
@@ -86,7 +103,11 @@ async fn delete_todo_on_server(id: &str) -> Result<(), String> {
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
-    if resp.ok() { Ok(()) } else { Err(format!("Server error: {}", resp.status())) }
+    if resp.ok() {
+        Ok(())
+    } else {
+        Err(format!("Server error: {}", resp.status()))
+    }
 }
 
 async fn clear_completed_on_server() -> Result<(), String> {
@@ -94,7 +115,11 @@ async fn clear_completed_on_server() -> Result<(), String> {
         .send()
         .await
         .map_err(|e| format!("Network error: {}", e))?;
-    if resp.ok() { Ok(()) } else { Err(format!("Server error: {}", resp.status())) }
+    if resp.ok() {
+        Ok(())
+    } else {
+        Err(format!("Server error: {}", resp.status()))
+    }
 }
 
 #[component]
@@ -124,30 +149,40 @@ pub fn App() -> impl IntoView {
         let sp = selected_priority.get();
         let sb = sort_by.get();
 
-        let mut result: Vec<Todo> = all.into_iter().filter(|todo| {
-            let matches_search = sq.is_empty()
-                || todo.title.to_lowercase().contains(&sq)
-                || todo.description.as_deref().unwrap_or("").to_lowercase().contains(&sq);
-            let matches_category = sc == "all" || todo.category == sc;
-            let matches_priority = sp == "all" || todo.priority.as_str() == sp;
-            matches_search && matches_category && matches_priority
-        }).collect();
+        let mut result: Vec<Todo> = all
+            .into_iter()
+            .filter(|todo| {
+                let matches_search = sq.is_empty()
+                    || todo.title.to_lowercase().contains(&sq)
+                    || todo
+                        .description
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&sq);
+                let matches_category = sc == "all" || todo.category == sc;
+                let matches_priority = sp == "all" || todo.priority.as_str() == sp;
+                matches_search && matches_category && matches_priority
+            })
+            .collect();
 
-        result.sort_by(|a, b| {
-            match sb.as_str() {
-                "oldest" => a.created_at.cmp(&b.created_at),
-                "dueDate" => match (&a.due_date, &b.due_date) {
-                    (None, _) => std::cmp::Ordering::Greater,
-                    (_, None) => std::cmp::Ordering::Less,
-                    (Some(da), Some(db)) => da.cmp(db),
-                },
-                "priority" => {
-                    let weight = |p: &TodoPriority| match p { TodoPriority::High => 3, TodoPriority::Medium => 2, TodoPriority::Low => 1 };
-                    weight(&b.priority).cmp(&weight(&a.priority))
-                }
-                "alphabetical" => a.title.cmp(&b.title),
-                _ => b.created_at.cmp(&a.created_at),
+        result.sort_by(|a, b| match sb.as_str() {
+            "oldest" => a.created_at.cmp(&b.created_at),
+            "dueDate" => match (&a.due_date, &b.due_date) {
+                (None, _) => std::cmp::Ordering::Greater,
+                (_, None) => std::cmp::Ordering::Less,
+                (Some(da), Some(db)) => da.cmp(db),
+            },
+            "priority" => {
+                let weight = |p: &TodoPriority| match p {
+                    TodoPriority::High => 3,
+                    TodoPriority::Medium => 2,
+                    TodoPriority::Low => 1,
+                };
+                weight(&b.priority).cmp(&weight(&a.priority))
             }
+            "alphabetical" => a.title.cmp(&b.title),
+            _ => b.created_at.cmp(&a.created_at),
         });
         result
     });
@@ -172,14 +207,23 @@ pub fn App() -> impl IntoView {
         let set_sync_status = set_sync_status.clone();
         let trigger_error = trigger_error.clone();
         spawn_local(async move {
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
             match fetch_todos_from_server().await {
                 Ok(data) => {
                     set_todos.set(data);
-                    set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) });
+                    set_sync_status.set(SyncStatus {
+                        status: SyncStatusState::Success,
+                        last_synced_at: Some(current_time_string()),
+                    });
                 }
                 Err(_) => {
-                    set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                    set_sync_status.set(SyncStatus {
+                        status: SyncStatusState::Error,
+                        last_synced_at: None,
+                    });
                     trigger_error("Could not sync with cloud server. Retrying...".to_string());
                 }
             }
@@ -188,10 +232,16 @@ pub fn App() -> impl IntoView {
                 match fetch_todos_from_server().await {
                     Ok(data) => {
                         set_todos.set(data);
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
                     }
                     Err(_) => {
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                     }
                 }
             }
@@ -207,14 +257,23 @@ pub fn App() -> impl IntoView {
             let set_sync_status = set_sync_status.clone();
             let trigger_error = trigger_error.clone();
             spawn_local(async move {
-                set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+                set_sync_status.set(SyncStatus {
+                    status: SyncStatusState::Syncing,
+                    last_synced_at: None,
+                });
                 match fetch_todos_from_server().await {
                     Ok(data) => {
                         set_todos.set(data);
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
                     }
                     Err(_) => {
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                         trigger_error("Could not sync with cloud server. Retrying...".to_string());
                     }
                 }
@@ -231,23 +290,45 @@ pub fn App() -> impl IntoView {
             let set_sync_status = set_sync_status.clone();
             let trigger_error = trigger_error.clone();
             let temp_id = format!("opt-{}", &js_sys::Math::random().to_string()[2..9]);
-            let now = js_sys::Date::new_0().to_iso_string().as_string().unwrap_or_default();
+            let now = js_sys::Date::new_0()
+                .to_iso_string()
+                .as_string()
+                .unwrap_or_default();
             let optimistic = Todo {
-                id: temp_id.clone(), title: data.title.clone(), description: data.description.clone(),
-                completed: false, priority: data.priority, category: data.category.clone(),
-                due_date: data.due_date.clone(), created_at: now.clone(), updated_at: now,
+                id: temp_id.clone(),
+                title: data.title.clone(),
+                description: data.description.clone(),
+                completed: false,
+                priority: data.priority,
+                category: data.category.clone(),
+                due_date: data.due_date.clone(),
+                created_at: now.clone(),
+                updated_at: now,
             };
             set_todos.update(|t| t.insert(0, optimistic));
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
             spawn_local(async move {
                 match create_todo_on_server(&data).await {
                     Ok(saved) => {
-                        set_todos.update(|t| { if let Some(pos) = t.iter().position(|x| x.id == temp_id) { t[pos] = saved; } });
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) });
+                        set_todos.update(|t| {
+                            if let Some(pos) = t.iter().position(|x| x.id == temp_id) {
+                                t[pos] = saved;
+                            }
+                        });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
                     }
                     Err(_) => {
                         set_todos.update(|t| t.retain(|x| x.id != temp_id));
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                         trigger_error("Add task failed. Reverted local change.".to_string());
                     }
                 }
@@ -264,16 +345,46 @@ pub fn App() -> impl IntoView {
             let set_sync_status = set_sync_status.clone();
             let trigger_error = trigger_error.clone();
             let id_clone = id.clone();
-            let now = js_sys::Date::new_0().to_iso_string().as_string().unwrap_or_default();
-            set_todos.update(|t| { if let Some(todo) = t.iter_mut().find(|x| x.id == id) { todo.completed = completed; todo.updated_at = now; } });
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
-            let updates = TodoUpdate { title: None, description: None, completed: Some(completed), priority: None, category: None, due_date: None };
+            let now = js_sys::Date::new_0()
+                .to_iso_string()
+                .as_string()
+                .unwrap_or_default();
+            set_todos.update(|t| {
+                if let Some(todo) = t.iter_mut().find(|x| x.id == id) {
+                    todo.completed = completed;
+                    todo.updated_at = now;
+                }
+            });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
+            let updates = TodoUpdate {
+                title: None,
+                description: None,
+                completed: Some(completed),
+                priority: None,
+                category: None,
+                due_date: None,
+            };
             spawn_local(async move {
                 match update_todo_on_server(&id_clone, &updates).await {
-                    Ok(_) => { set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) }); }
+                    Ok(_) => {
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
+                    }
                     Err(_) => {
-                        set_todos.update(|t| { if let Some(todo) = t.iter_mut().find(|x| x.id == id_clone) { todo.completed = !completed; } });
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        set_todos.update(|t| {
+                            if let Some(todo) = t.iter_mut().find(|x| x.id == id_clone) {
+                                todo.completed = !completed;
+                            }
+                        });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                         trigger_error("Action failed. Reverted state.".to_string());
                     }
                 }
@@ -290,26 +401,52 @@ pub fn App() -> impl IntoView {
             let set_sync_status = set_sync_status.clone();
             let trigger_error = trigger_error.clone();
             let id_clone = id.clone();
-            let now = js_sys::Date::new_0().to_iso_string().as_string().unwrap_or_default();
+            let now = js_sys::Date::new_0()
+                .to_iso_string()
+                .as_string()
+                .unwrap_or_default();
             set_todos.update(|t| {
                 if let Some(todo) = t.iter_mut().find(|x| x.id == id) {
-                    if let Some(ref title) = updates.title { todo.title = title.clone(); }
-                    if let Some(ref desc) = updates.description { todo.description = desc.clone(); }
-                    if let Some(p) = &updates.priority { todo.priority = *p; }
-                    if let Some(ref cat) = updates.category { todo.category = cat.clone(); }
-                    if let Some(ref dd) = updates.due_date { todo.due_date = dd.clone(); }
+                    if let Some(ref title) = updates.title {
+                        todo.title = title.clone();
+                    }
+                    if let Some(ref desc) = updates.description {
+                        todo.description = desc.clone();
+                    }
+                    if let Some(p) = &updates.priority {
+                        todo.priority = *p;
+                    }
+                    if let Some(ref cat) = updates.category {
+                        todo.category = cat.clone();
+                    }
+                    if let Some(ref dd) = updates.due_date {
+                        todo.due_date = dd.clone();
+                    }
                     todo.updated_at = now;
                 }
             });
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
             spawn_local(async move {
                 match update_todo_on_server(&id_clone, &updates).await {
                     Ok(saved) => {
-                        set_todos.update(|t| { if let Some(todo) = t.iter_mut().find(|x| x.id == id_clone) { *todo = saved; } });
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) });
+                        set_todos.update(|t| {
+                            if let Some(todo) = t.iter_mut().find(|x| x.id == id_clone) {
+                                *todo = saved;
+                            }
+                        });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
                     }
                     Err(_) => {
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                         trigger_error("Task edit failed. Changes reverted.".to_string());
                     }
                 }
@@ -327,14 +464,31 @@ pub fn App() -> impl IntoView {
             let trigger_error = trigger_error.clone();
             let id_clone = id.clone();
             let mut removed = None;
-            set_todos.update(|t| { if let Some(pos) = t.iter().position(|x| x.id == id) { removed = Some(t.remove(pos)); } });
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+            set_todos.update(|t| {
+                if let Some(pos) = t.iter().position(|x| x.id == id) {
+                    removed = Some(t.remove(pos));
+                }
+            });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
             spawn_local(async move {
                 match delete_todo_on_server(&id_clone).await {
-                    Ok(_) => { set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) }); }
+                    Ok(_) => {
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
+                    }
                     Err(_) => {
-                        if let Some(todo) = removed { set_todos.update(|t| t.insert(0, todo)); }
-                        set_sync_status.set(SyncStatus { status: SyncStatusState::Error, last_synced_at: None });
+                        if let Some(todo) = removed {
+                            set_todos.update(|t| t.insert(0, todo));
+                        }
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Error,
+                            last_synced_at: None,
+                        });
                         trigger_error("Delete failed. Restored task.".to_string());
                     }
                 }
@@ -353,11 +507,22 @@ pub fn App() -> impl IntoView {
             let trigger_error = trigger_error.clone();
             let force_refresh = force_refresh.clone();
             set_todos.update(|t| t.retain(|x| !x.completed));
-            set_sync_status.set(SyncStatus { status: SyncStatusState::Syncing, last_synced_at: None });
+            set_sync_status.set(SyncStatus {
+                status: SyncStatusState::Syncing,
+                last_synced_at: None,
+            });
             spawn_local(async move {
                 match clear_completed_on_server().await {
-                    Ok(_) => { set_sync_status.set(SyncStatus { status: SyncStatusState::Success, last_synced_at: Some(current_time_string()) }); }
-                    Err(_) => { force_refresh.run(()); trigger_error("Clear completed failed.".to_string()); }
+                    Ok(_) => {
+                        set_sync_status.set(SyncStatus {
+                            status: SyncStatusState::Success,
+                            last_synced_at: Some(current_time_string()),
+                        });
+                    }
+                    Err(_) => {
+                        force_refresh.run(());
+                        trigger_error("Clear completed failed.".to_string());
+                    }
                 }
             });
         })
@@ -373,7 +538,7 @@ pub fn App() -> impl IntoView {
                     <div class="bg-[#2563EB] text-white p-1.5 rounded-lg">{move || icon_check_square()}</div>
                     <div>
                         <h1 class="text-sm font-bold tracking-tight text-[#111827] flex items-center gap-1.5 font-display">
-                            "LeptosTask " <span class="font-mono text-[10px] text-[#9CA3AF] font-medium">"v0.7.0"</span>
+                            "Todo " <span class="font-mono text-[10px] text-[#9CA3AF] font-medium">"v0.7.0"</span>
                         </h1>
                     </div>
                 </div>
