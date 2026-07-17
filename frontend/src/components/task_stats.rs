@@ -44,7 +44,7 @@ pub fn TaskStats(todos: Memo<Vec<Todo>>) -> impl IntoView {
                 !t.completed
                     && t.due_date
                         .as_deref()
-                        .map(|d| is_date_overdue(d))
+                        .map(is_date_overdue)
                         .unwrap_or(false)
             })
             .count()
