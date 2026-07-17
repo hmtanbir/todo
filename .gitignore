@@ -1,2 +1,3 @@
-terget/
+target/
 .mimocode/
+data/todos.db
