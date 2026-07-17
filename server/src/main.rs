@@ -375,12 +375,18 @@ async fn main() {
 
     let app = Router::new()
         .merge(api_routes)
+        .fallback_service(
+            tower_http::services::ServeDir::new("dist")
+                .fallback(tower_http::services::ServeFile::new("dist/index.html"))
+        )
         .layer(cors)
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3001")
+    let port = std::env::var("PORT").unwrap_or_else(|_| "3000".to_string());
+    let addr = format!("0.0.0.0:{}", port);
+    let listener = tokio::net::TcpListener::bind(&addr)
         .await
         .unwrap();
-    println!("Server running on http://localhost:3001");
+    println!("Server running on http://localhost:{}", port);
     axum::serve(listener, app).await.unwrap();
 }

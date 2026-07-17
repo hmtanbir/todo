@@ -4,10 +4,9 @@ set -e
 echo "=== LeptosTask - Full-Stack Rust Todo App ==="
 echo ""
 
-# Start the Axum server in background
 echo "Starting Axum API server on port 3001..."
 cd "$(dirname "$0")"
-cargo run --bin server &
+PORT=3001 cargo run --bin server &
 SERVER_PID=$!
 
 # Wait a moment for server to start
