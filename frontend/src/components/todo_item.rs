@@ -21,7 +21,7 @@ pub fn TodoItem(
     let is_overdue = todo
         .due_date
         .as_deref()
-        .map(|d| is_date_overdue(d))
+        .map(is_date_overdue)
         .unwrap_or(false);
 
     let priority_border_class = match todo.priority {
@@ -49,7 +49,7 @@ pub fn TodoItem(
 
     let handle_save = {
         let todo_id = todo.id.clone();
-        let on_update = on_update.clone();
+        let on_update = on_update;
         move |_| {
             let t = edit_title.get();
             if t.trim().is_empty() {
@@ -176,9 +176,9 @@ pub fn TodoItem(
                 }.into_any()
             } else {
                 let toggle_id = c_todo_id_toggle.clone();
-                let toggle_fn = on_toggle.clone();
+                let toggle_fn = on_toggle;
                 let delete_id = c_todo_id_delete.clone();
-                let delete_fn = on_delete.clone();
+                let delete_fn = on_delete;
 
                 let title = c_todo_title.clone();
                 let category = c_todo_category.clone();

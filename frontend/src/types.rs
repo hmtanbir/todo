@@ -209,11 +209,11 @@ pub fn current_time_string() -> String {
     let (h, ampm) = if hours == 0 {
         (12, "AM")
     } else if hours < 12 {
-        (hours as u32, "AM")
+        (hours, "AM")
     } else if hours == 12 {
         (12, "PM")
     } else {
-        ((hours - 12) as u32, "PM")
+        ((hours - 12), "PM")
     };
     format!("{}:{:>02}:{:>02} {}", h, minutes, seconds, ampm)
 }

@@ -190,10 +190,10 @@ pub fn App() -> impl IntoView {
     let completed_count = Memo::new(move |_| todos.get().iter().filter(|t| t.completed).count());
 
     let trigger_error = {
-        let set_error_toast = set_error_toast.clone();
+        let set_error_toast = set_error_toast;
         move |msg: String| {
             set_error_toast.set(msg);
-            let set_error_toast = set_error_toast.clone();
+            let set_error_toast = set_error_toast;
             spawn_local(async move {
                 gloo_timers::future::sleep(std::time::Duration::from_millis(4000)).await;
                 set_error_toast.set(String::new());
@@ -203,9 +203,9 @@ pub fn App() -> impl IntoView {
 
     // Initial fetch + polling
     {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         spawn_local(async move {
             set_sync_status.set(SyncStatus {
                 status: SyncStatusState::Syncing,
@@ -249,13 +249,13 @@ pub fn App() -> impl IntoView {
     }
 
     let force_refresh = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         Callback::new(move |()| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
             spawn_local(async move {
                 set_sync_status.set(SyncStatus {
                     status: SyncStatusState::Syncing,
@@ -282,13 +282,13 @@ pub fn App() -> impl IntoView {
     };
 
     let handle_add_todo = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         Callback::new(move |data: NewTodoData| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
             let temp_id = format!("opt-{}", &js_sys::Math::random().to_string()[2..9]);
             let now = js_sys::Date::new_0()
                 .to_iso_string()
@@ -337,13 +337,13 @@ pub fn App() -> impl IntoView {
     };
 
     let handle_toggle = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         Callback::new(move |(id, completed): (String, bool)| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
             let id_clone = id.clone();
             let now = js_sys::Date::new_0()
                 .to_iso_string()
@@ -393,13 +393,13 @@ pub fn App() -> impl IntoView {
     };
 
     let handle_update = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         Callback::new(move |(id, updates): (String, TodoUpdate)| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
             let id_clone = id.clone();
             let now = js_sys::Date::new_0()
                 .to_iso_string()
@@ -455,13 +455,13 @@ pub fn App() -> impl IntoView {
     };
 
     let handle_delete = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
         Callback::new(move |id: String| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
             let id_clone = id.clone();
             let mut removed = None;
             set_todos.update(|t| {
@@ -497,15 +497,15 @@ pub fn App() -> impl IntoView {
     };
 
     let handle_clear_completed = {
-        let set_todos = set_todos.clone();
-        let set_sync_status = set_sync_status.clone();
-        let trigger_error = trigger_error.clone();
-        let force_refresh = force_refresh.clone();
+        let set_todos = set_todos;
+        let set_sync_status = set_sync_status;
+        let trigger_error = trigger_error;
+        let force_refresh = force_refresh;
         Callback::new(move |()| {
-            let set_todos = set_todos.clone();
-            let set_sync_status = set_sync_status.clone();
-            let trigger_error = trigger_error.clone();
-            let force_refresh = force_refresh.clone();
+            let set_todos = set_todos;
+            let set_sync_status = set_sync_status;
+            let trigger_error = trigger_error;
+            let force_refresh = force_refresh;
             set_todos.update(|t| t.retain(|x| !x.completed));
             set_sync_status.set(SyncStatus {
                 status: SyncStatusState::Syncing,
@@ -726,9 +726,9 @@ pub fn App() -> impl IntoView {
                                     view! {
                                         <TodoItem
                                             todo=todo
-                                            on_toggle=handle_toggle.clone()
-                                            on_delete=handle_delete.clone()
-                                            on_update=handle_update.clone()
+                                            on_toggle=handle_toggle
+                                            on_delete=handle_delete
+                                            on_update=handle_update
                                             categories=categories
                                         />
                                     }
