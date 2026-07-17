@@ -1,0 +1,72 @@
+body {
+    background-color: #f8fafc;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Transitions for expand/collapse */
+.expand-enter {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+.expand-enter-active {
+    max-height: 500px;
+    opacity: 1;
+}
+
+/* Smooth fade-in for todo items */
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.todo-item-enter {
+    animation: fadeSlideIn 0.25s ease-out;
+}
+
+/* Ping animation for sync indicator */
+@keyframes ping-once {
+    75%, 100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+.animate-ping-slow {
+    animation: ping-once 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Spin animation for refresh */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+    animation: spin-slow 1s linear infinite;
+}

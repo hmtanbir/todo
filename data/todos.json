@@ -1,0 +1,33 @@
+[
+  {
+    "id": "1",
+    "title": "Welcome to your collaborative Todo List!",
+    "description": "This app is fully connected to an Axum backend. Any changes you make are saved in real-time across devices.",
+    "completed": false,
+    "priority": "high",
+    "category": "Personal",
+    "dueDate": "2026-07-18",
+    "createdAt": "2026-07-17T08:12:27.407190+00:00",
+    "updatedAt": "2026-07-17T08:12:27.407190+00:00"
+  },
+  {
+    "id": "2",
+    "title": "Explore filtering and sorting capabilities",
+    "description": "You can filter tasks by Category (Work, Personal, Shopping, etc.), search by text, or filter by Priority.",
+    "completed": false,
+    "priority": "medium",
+    "category": "Work",
+    "createdAt": "2026-07-17T08:12:27.407190+00:00",
+    "updatedAt": "2026-07-17T08:12:27.407190+00:00"
+  },
+  {
+    "id": "3",
+    "title": "Try out real-time sync",
+    "description": "Open this app in multiple browser tabs. Notice the sync indicator and watch how changes propagate smoothly.",
+    "completed": true,
+    "priority": "low",
+    "category": "Ideas",
+    "createdAt": "2026-07-17T08:12:27.407190+00:00",
+    "updatedAt": "2026-07-17T08:12:27.407190+00:00"
+  }
+]

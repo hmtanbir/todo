@@ -1,0 +1,12 @@
+[build]
+target = "index.html"
+dist = "dist"
+public = "public"
+
+[watch]
+watch = ["src", "index.html", "style"]
+
+[[proxy]]
+rewrite = "/api/"
+backend = "http://127.0.0.1:3001/api/"
+
