@@ -1,0 +1,17 @@
+
+services:
+  app:
+    build:
+      context: .
+      target: runner
+    environment:
+      - PORT=3000
+      - RUST_LOG=info
+    ports:
+      - "3001:3000"
+    volumes:
+      - todo-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  todo-data:
